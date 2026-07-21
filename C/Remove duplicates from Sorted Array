@@ -1,5 +1,4 @@
 int removeDuplicates(int* nums, int numsSize) {
-    // int removeDuplicates(int* nums, int numsSize) {
     if (numsSize == 0) return 0;
 
     int k = 1; // Position to place the next unique element
