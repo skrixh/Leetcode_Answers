@@ -1,0 +1,106 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define HASH_SIZE 2043
+
+// Comparator function to sort characters within a string
+int cmpChar(const void* a, const void* b) {
+    return (*(char*)a - *(char*)b);
+}
+
+// Node structure for the Hash Map chaining
+typedef struct HashNode {
+    char* sortedKey;
+    char** originalStrings;
+    int count;
+    int capacity;
+    struct HashNode* next;
+} HashNode;
+
+// Polynomial rolling hash function for strings
+unsigned int getHash(char* str) {
+    unsigned int hash = 0;
+    while (*str) {
+        hash = hash * 31 + *str;
+        str++;
+    }
+    return hash % HASH_SIZE;
+}
+
+/**
+ * Return an array of arrays of size *returnSize.
+ * The sizes of the arrays are returned as *returnColumnSizes array.
+ * Note: Both returned array and *returnColumnSizes array must be malloced, assume caller calls free().
+ */
+char*** groupAnagrams(char** strs, int strsSize, int* returnSize, int** returnColumnSizes) {
+    // Initialize hash table buckets to NULL
+    HashNode* hashTable[HASH_SIZE] = {NULL};
+    int uniqueGroupsCount = 0;
+    
+    // Track dynamic groups sequentially to preserve answer construction ordering
+    HashNode** groupsList = (HashNode**)malloc(strsSize * sizeof(HashNode*));
+
+    for (int i = 0; i < strsSize; i++) {
+        int len = strlen(strs[i]);
+        char* sortedStr = (char*)malloc((len + 1) * sizeof(char));
+        strcpy(sortedStr, strs[i]);
+        qsort(sortedStr, len, sizeof(char), cmpChar);
+        
+        unsigned int index = getHash(sortedStr);
+        HashNode* curr = hashTable[index];
+        HashNode* targetNode = NULL;
+        
+        // Search inside the linked list chain at index
+        while (curr != NULL) {
+            if (strcmp(curr->sortedKey, sortedStr) == 0) {
+                targetNode = curr;
+                break;
+            }
+            curr = curr->next;
+        }
+        
+        // If the anagram key pattern is new, allocate a new bucket group
+        if (targetNode == NULL) {
+            targetNode = (HashNode*)malloc(sizeof(HashNode));
+            targetNode->sortedKey = sortedStr;
+            targetNode->capacity = 4;
+            targetNode->count = 0;
+            targetNode->originalStrings = (char**)malloc(targetNode->capacity * sizeof(char*));
+            
+            // Insert at the head of the chain
+            targetNode->next = hashTable[index];
+            hashTable[index] = targetNode;
+            
+            groupsList[uniqueGroupsCount++] = targetNode;
+        } else {
+            free(sortedStr); // Free unused sorting allocation if match exists
+        }
+        
+        // Expand original string references array capacity if bucket becomes full
+        if (targetNode->count >= targetNode->capacity) {
+            targetNode->capacity *= 2;
+            targetNode->originalStrings = (char**)realloc(targetNode->originalStrings, targetNode->capacity * sizeof(char*));
+        }
+        
+        // Push current word pointer reference inside target bucket collection
+        targetNode->originalStrings[targetNode->count++] = strs[i];
+    }
+    
+    // Construct response data structures required by LeetCode engine platform
+    char*** result = (char***)malloc(uniqueGroupsCount * sizeof(char**));
+    *returnColumnSizes = (int*)malloc(uniqueGroupsCount * sizeof(int));
+    *returnSize = uniqueGroupsCount;
+    
+    for (int i = 0; i < uniqueGroupsCount; i++) {
+        result[i] = groupsList[i]->originalStrings;
+        (*returnColumnSizes)[i] = groupsList[i]->count;
+        
+        // Cleanup wrapper infrastructure metadata without destroying payload contents
+        free(groupsList[i]->sortedKey);
+        free(groupsList[i]);
+    }
+    
+    free(groupsList);
+    return result;
+}
