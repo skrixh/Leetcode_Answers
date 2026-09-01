@@ -1,0 +1,26 @@
+int islandPerimeter(int** grid, int gridSize, int* gridColSize) {
+    int perimeter = 0;
+    int rows = gridSize;
+    int cols = gridColSize[0];
+    
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            if (grid[i][j] == 1) {
+                // Add 4 for the current land cell
+                perimeter += 4;
+                
+                // Subtract 2 if there is a land cell above (shared edge)
+                if (i > 0 && grid[i - 1][j] == 1) {
+                    perimeter -= 2;
+                }
+                
+                // Subtract 2 if there is a land cell to the left (shared edge)
+                if (j > 0 && grid[i][j - 1] == 1) {
+                    perimeter -= 2;
+                }
+            }
+        }
+    }
+    
+    return perimeter;
+}
