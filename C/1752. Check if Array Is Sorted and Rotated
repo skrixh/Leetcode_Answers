@@ -1,0 +1,13 @@
+bool check(int* nums, int numsSize) {
+    int count = 0;
+    
+    for (int i = 0; i < numsSize; i++) {
+        // Compare current element with next element (wrap around to 0 using modulo)
+        if (nums[i] > nums[(i + 1) % numsSize]) {
+            count++;
+        }
+    }
+    
+    // A sorted and rotated array can have at most 1 point where nums[i] > nums[i+1]
+    return count <= 1;
+}
