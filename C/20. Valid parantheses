@@ -1,0 +1,41 @@
+bool isValid(char* s) {
+    int len = 0;
+    while (s[len] != '\0') {
+        len++;
+    }
+    
+    // An odd length string can never be valid
+    if (len % 2 != 0) {
+        return false;
+    }
+    
+    // allocate max memory safely without malloc overhead
+    char stack[len];
+    int top = -1;
+    
+    for (int i = 0; i < len; i++) {
+        char c = s[i];
+        
+        // Push opening brackets
+        if (c == '(' || c == '[' || c == '{') {
+            stack[++top] = c;
+        } 
+        // Process closing brackets
+        else {
+            // Found a closing bracket but stack is empty
+            if (top == -1) {
+                return false;
+            }
+            
+            char topChar = stack[top--];
+            if ((c == ')' && topChar != '(') ||
+                (c == ']' && topChar != '[') ||
+                (c == '}' && topChar != '{')) {
+                return false;
+            }
+        }
+    }
+
+    // FIX: Make sure the function always returns a boolean value here
+    return top == -1;
+}
