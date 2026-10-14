@@ -1,0 +1,43 @@
+int longestValidParentheses(char* s) {
+    int len = 0;
+    while (s[len] != '\0') {
+        len++;
+    }
+    
+    if (len <= 1) {
+        return 0;
+    }
+    
+    // Array-based stack to track indices. 
+    // Max capacity is len + 1 to account for the initial -1 boundary element.
+    int stack[len + 1];
+    int top = -1;
+    int maxLen = 0;
+    
+    // Base boundary element to serve as anchor for matching groups starting at index 0
+    stack[++top] = -1;
+    
+    for (int i = 0; i < len; i++) {
+        if (s[i] == '(') {
+            // Push index of opening bracket
+            stack[++top] = i;
+        } else {
+            // Found ')', pop the corresponding opening bracket or boundary anchor
+            top--;
+            
+            if (top == -1) {
+                // If the stack becomes empty, this ')' has no pair.
+                // Push current index as the new baseline boundary anchor.
+                stack[++top] = i;
+            } else {
+                // Current valid length is: current index - index at stack top
+                int currentLen = i - stack[top];
+                if (currentLen > maxLen) {
+                    maxLen = currentLen;
+                }
+            }
+        }
+    }
+    
+    return maxLen;
+}
